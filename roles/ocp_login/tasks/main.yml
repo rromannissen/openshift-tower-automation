@@ -1,0 +1,3 @@
+---
+# tasks file for ocp_login
+- include: 00_ocp_login.yml

@@ -1,0 +1,181 @@
+#!groovy
+properties([parameters([string(name: 'SERVICE_NAME', description: 'Service Name'),
+string(name: 'DOCKERFILE_GIT_USER', description: 'Dockerfile Repository User'),
+string(name: 'DOCKERFILE_GIT_URL', description: 'Dockerfile Repository URL'),
+string(name: 'TOWER_URL', description: 'Tower instance URL'),
+string(name: 'OCP_URL', description: 'Openshift Master URL'),
+string(name: 'OC_REGISTRY_URL', description: 'Openshift Registry URL'),
+string(name: 'NEXUS_BASE_URL', description: 'Nexus Base URL'),
+string(name: 'NEXUS_REPOSITORY', description: 'Nexus Repository'),
+string(name: 'ARTIFACT_GROUP', description: 'Artifact Group'),
+string(name: 'ARTIFACT_ID', description: 'Artifact ID'),
+string(name: 'ARTIFACT_TYPE', description: 'Artifact Type'),
+string(name: 'ARTIFACT_VERSION', description: 'Artifact Version'),
+string(name: 'CONFIG_GIT_USER', description: 'User for Configuration Repository'),
+string(name: 'CONFIG_GIT_URL', description: 'Configuration Repository URL'),
+string(name: 'TARGET_ENVIRONMENT', description: 'Target environment for deployment'),
+string(name: 'TEMPLATE_NAME', description: 'Template Name')])])
+
+stage('Create Projects') {
+  node('tower') {
+    withCredentials([string(credentialsId: 'Tower Password', variable: 'TOWER_PASS'),
+    string(credentialsId: 'Tower User', variable: 'TOWER_USER'),
+    string(credentialsId: 'OCPUser', variable: 'OCP_USER'),
+    string(credentialsId: 'OCPPass', variable: 'OCP_PASSWORD')]) {
+      sh "tower-cli config username ${TOWER_USER}"
+      sh "tower-cli config password ${TOWER_PASS}"
+      sh "tower-cli config verify_ssl false"
+      sh "tower-cli config host ${TOWER_URL}"
+      sh ("tower-cli job launch --job-template=\"Create Projects\" "
+      + "--monitor --extra-vars=\"SERVICE_NAME=${SERVICE_NAME} "
+      + "OCP_URL=${OCP_URL} "
+      + "OCP_USER=${OCP_USER} "
+      + "OCP_PASSWORD=${OCP_PASSWORD}\"")
+    }
+  }
+}
+
+stage('Build Image') {
+  node('tower') {
+    withCredentials([string(credentialsId: 'Tower Password', variable: 'TOWER_PASS'),
+    string(credentialsId: 'Tower User', variable: 'TOWER_USER'),
+    string(credentialsId: 'OCPUser', variable: 'OCP_USER'),
+    string(credentialsId: 'OCPPass', variable: 'OCP_PASSWORD'),
+    string(credentialsId: 'Gitlab Password', variable: 'GIT_PASS')]) {
+      sh "tower-cli config username ${TOWER_USER}"
+      sh "tower-cli config password ${TOWER_PASS}"
+      sh "tower-cli config verify_ssl false"
+      sh "tower-cli config host ${TOWER_URL}"
+      sh ("tower-cli job launch --job-template=\"Build Image\" "
+      + "--monitor --extra-vars=\"SERVICE_NAME=${SERVICE_NAME} "
+      + "OCP_URL=${OCP_URL} "
+      + "OCP_USER=${OCP_USER} "
+      + "OCP_PASSWORD=${OCP_PASSWORD} "
+      + "DOCKERFILE_GIT_USER=${DOCKERFILE_GIT_USER} "
+      + "DOCKERFILE_GIT_PASS=${GIT_PASS} "
+      + "DOCKERFILE_GIT_URL=${DOCKERFILE_GIT_URL} "
+      + "OC_REGISTRY_URL=${OC_REGISTRY_URL} "
+      + "NEXUS_BASE_URL=${NEXUS_BASE_URL} "
+      + "NEXUS_REPOSITORY=${NEXUS_REPOSITORY} "
+      + "ARTIFACT_GROUP=${ARTIFACT_GROUP} "
+      + "ARTIFACT_ID=${ARTIFACT_ID} "
+      + "ARTIFACT_TYPE=${ARTIFACT_TYPE} "
+      + "ARTIFACT_VERSION=${ARTIFACT_VERSION}\"")
+    }
+  }
+}
+
+stage('Configure Projects') {
+  node('tower') {
+    withCredentials([string(credentialsId: 'Tower Password', variable: 'TOWER_PASS'),
+    string(credentialsId: 'Tower User', variable: 'TOWER_USER'),
+    string(credentialsId: 'OCPUser', variable: 'OCP_USER'),
+    string(credentialsId: 'OCPPass', variable: 'OCP_PASSWORD'),
+    string(credentialsId: 'Gitlab Password', variable: 'GIT_PASS'),
+    string(credentialsId: 'DbUserDev', variable: 'DB_USER_DEV'),
+    string(credentialsId: 'DbPassDev', variable: 'DB_PASS_DEV'),
+    string(credentialsId: 'DbUserPre', variable: 'DB_USER_PRE'),
+    string(credentialsId: 'DbPassPre', variable: 'DB_PASS_PRE'),
+    string(credentialsId: 'DbUserPro', variable: 'DB_USER_PRO'),
+    string(credentialsId: 'DbPassPro', variable: 'DB_PASS_PRO')]) {
+      sh "tower-cli config username ${TOWER_USER}"
+      sh "tower-cli config password ${TOWER_PASS}"
+      sh "tower-cli config verify_ssl false"
+      sh "tower-cli config host ${TOWER_URL}"
+      sh ("tower-cli job launch --job-template=\"Config Projects\" "
+      + "--monitor --extra-vars=\"SERVICE_NAME=${SERVICE_NAME} "
+      + "OCP_URL=${OCP_URL} "
+      + "OCP_USER=${OCP_USER} "
+      + "OCP_PASSWORD=${OCP_PASSWORD} "
+      + "DB_USER_DEV=${DB_USER_DEV} "
+      + "DB_PASS_DEV=${DB_PASS_DEV} "
+      + "DB_USER_PRE=${DB_USER_PRE} "
+      + "DB_PASS_PRE=${DB_PASS_PRE} "
+      + "DB_USER_PRO=${DB_USER_PRO} "
+      + "DB_PASS_PRO=${DB_PASS_PRO} "
+      + "CONFIG_GIT_USER=${CONFIG_GIT_USER} "
+      + "CONFIG_GIT_PASS=${GIT_PASS} "
+      + "CONFIG_GIT_URL=${CONFIG_GIT_URL}\"")
+    }
+  }
+}
+
+stage('Tag Images') {
+  node('tower') {
+    withCredentials([string(credentialsId: 'Tower Password', variable: 'TOWER_PASS'),
+    string(credentialsId: 'Tower User', variable: 'TOWER_USER'),
+    string(credentialsId: 'OCPUser', variable: 'OCP_USER'),
+    string(credentialsId: 'OCPPass', variable: 'OCP_PASSWORD')]) {
+      sh "tower-cli config username ${TOWER_USER}"
+      sh "tower-cli config password ${TOWER_PASS}"
+      sh "tower-cli config verify_ssl false"
+      sh "tower-cli config host ${TOWER_URL}"
+      sh ("tower-cli job launch --job-template=\"Tag Images\" "
+      + "--monitor --extra-vars=\"SERVICE_NAME=${SERVICE_NAME} "
+      + "OCP_URL=${OCP_URL} "
+      + "OCP_USER=${OCP_USER} "
+      + "OCP_PASSWORD=${OCP_PASSWORD} "
+      + "TARGET_ENVIRONMENT=${TARGET_ENVIRONMENT}\"")
+    }
+  }
+}
+
+stage('Create Objects') {
+  node('tower') {
+    withCredentials([string(credentialsId: 'Tower Password', variable: 'TOWER_PASS'),
+    string(credentialsId: 'Tower User', variable: 'TOWER_USER'),
+    string(credentialsId: 'OCPUser', variable: 'OCP_USER'),
+    string(credentialsId: 'OCPPass', variable: 'OCP_PASSWORD'),
+    string(credentialsId: 'Gitlab Password', variable: 'GIT_PASS'),
+    string(credentialsId: 'DbUserDev', variable: 'DB_USER_DEV'),
+    string(credentialsId: 'DbPassDev', variable: 'DB_PASS_DEV'),
+    string(credentialsId: 'DbUserPre', variable: 'DB_USER_PRE'),
+    string(credentialsId: 'DbPassPre', variable: 'DB_PASS_PRE'),
+    string(credentialsId: 'DbUserPro', variable: 'DB_USER_PRO'),
+    string(credentialsId: 'DbPassPro', variable: 'DB_PASS_PRO')]) {
+      sh "tower-cli config username ${TOWER_USER}"
+      sh "tower-cli config password ${TOWER_PASS}"
+      sh "tower-cli config verify_ssl false"
+      sh "tower-cli config host ${TOWER_URL}"
+      sh ("tower-cli job launch --job-template=\"Create Objects\" "
+      + "--monitor --extra-vars=\"SERVICE_NAME=${SERVICE_NAME} "
+      + "OCP_URL=${OCP_URL} "
+      + "OCP_USER=${OCP_USER} "
+      + "OCP_PASSWORD=${OCP_PASSWORD} "
+      + "ENV=dev "
+      + "TEMPLATE_NAME=${TEMPLATE_NAME} "
+      + "MONGODB_USER=${DB_USER_DEV} "
+      + "MONGODB_PASSWORD=${DB_PASS_DEV} "
+      + "MONGODB_DATABASE=${SERVICE_NAME} "
+      + "MONGODB_ADMIN_PASSWORD=${DB_PASS_DEV} "
+      + "ARTIFACT_ID=${ARTIFACT_ID} "
+      + "ARTIFACT_VERSION=${ARTIFACT_VERSION}\"")
+      sh ("tower-cli job launch --job-template=\"Create Objects\" "
+      + "--monitor --extra-vars=\"SERVICE_NAME=${SERVICE_NAME} "
+      + "OCP_URL=${OCP_URL} "
+      + "OCP_USER=${OCP_USER} "
+      + "OCP_PASSWORD=${OCP_PASSWORD} "
+      + "ENV=pre "
+      + "TEMPLATE_NAME=${TEMPLATE_NAME} "
+      + "MONGODB_USER=${DB_USER_PRE} "
+      + "MONGODB_PASSWORD=${DB_PASS_PRE} "
+      + "MONGODB_DATABASE=${SERVICE_NAME} "
+      + "MONGODB_ADMIN_PASSWORD=${DB_PASS_PRE} "
+      + "ARTIFACT_ID=${ARTIFACT_ID} "
+      + "ARTIFACT_VERSION=${ARTIFACT_VERSION}\"")
+      sh ("tower-cli job launch --job-template=\"Create Objects\" "
+      + "--monitor --extra-vars=\"SERVICE_NAME=${SERVICE_NAME} "
+      + "OCP_URL=${OCP_URL} "
+      + "OCP_USER=${OCP_USER} "
+      + "OCP_PASSWORD=${OCP_PASSWORD} "
+      + "ENV=pro "
+      + "TEMPLATE_NAME=${TEMPLATE_NAME} "
+      + "MONGODB_USER=${DB_USER_PRO} "
+      + "MONGODB_PASSWORD=${DB_PASS_PRO} "
+      + "MONGODB_DATABASE=${SERVICE_NAME} "
+      + "MONGODB_ADMIN_PASSWORD=${DB_PASS_PRO} "
+      + "ARTIFACT_ID=${ARTIFACT_ID} "
+      + "ARTIFACT_VERSION=${ARTIFACT_VERSION}\"")
+    }
+  }
+}

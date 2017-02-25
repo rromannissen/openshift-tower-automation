@@ -1,0 +1,15 @@
+---
+- name: '[Tag Images] Change to DEV project'
+  command: "{{ OC_CLIENT_PATH }}/oc project {{ SERVICE_NAME }}-dev"
+
+- name: '[Tag Images] Tag DEV image'
+  command: "{{ OC_CLIENT_PATH }}/oc tag {{ SERVICE_NAME }}:latest {{ SERVICE_NAME }}:{{ SERVICE_NAME }}-dev"
+
+- name: '[Tag Images] Tag PRE image'
+  command: "{{ OC_CLIENT_PATH }}/oc tag {{ SERVICE_NAME }}:latest {{ SERVICE_NAME }}:{{ SERVICE_NAME }}-pre"
+  when: (TARGET_ENVIRONMENT == "PRE") or
+        (TARGET_ENVIRONMENT == "PRO")
+
+- name: '[Tag Images] Tag PRO image'
+  command: "{{ OC_CLIENT_PATH }}/oc tag {{ SERVICE_NAME }}:latest {{ SERVICE_NAME }}:{{ SERVICE_NAME }}-pro"
+  when: (TARGET_ENVIRONMENT == "PRO")

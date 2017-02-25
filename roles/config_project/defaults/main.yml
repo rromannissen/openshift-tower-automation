@@ -1,0 +1,3 @@
+---
+# defaults file for config_project
+DOWNLOAD_PATH: '/tmp'

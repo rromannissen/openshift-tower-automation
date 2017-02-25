@@ -1,0 +1,4 @@
+---
+# tasks file for build_image
+- include: 00_download_files.yml
+- include: 01_build_from_dockerfile.yml

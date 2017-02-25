@@ -1,0 +1,4 @@
+---
+# tasks file for config_project
+- include: 00_download_files.yml
+- include: 01_apply_config.yml

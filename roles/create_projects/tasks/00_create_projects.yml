@@ -1,0 +1,17 @@
+---
+#Try to create dev project and register result
+#Openshift client is expected to be already available on the OC_CLIENT_PATH
+- name: '[Create Projects] Create DEV project'
+  command: "{{ OC_CLIENT_PATH }}/oc new-project {{ SERVICE_NAME }}-dev"
+  register: result
+  ignore_errors: True
+
+#If dev project creation succeeded, create PRE project.
+- name: '[Create Projects] Create PRE project'
+  command: "{{ OC_CLIENT_PATH }}/oc new-project {{ SERVICE_NAME }}-pre"
+  when: result|succeeded
+
+#If dev project creation succeeded, create PRO project.
+- name: '[Create Projects] Create PRO project'
+  command: "{{ OC_CLIENT_PATH }}/oc new-project {{ SERVICE_NAME }}-pro"
+  when: result|succeeded

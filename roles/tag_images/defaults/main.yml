@@ -1,0 +1,3 @@
+---
+# defaults file for tag_images
+OC_CLIENT_PATH: '/opt/oc'

@@ -1,0 +1,3 @@
+---
+# defaults file for ocp_login
+OC_CLIENT_PATH: '/opt/ocp'

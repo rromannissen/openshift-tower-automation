@@ -1,0 +1,8 @@
+---
+- name: '[Global] Create Objects'
+  hosts: bastion
+  become: false
+  roles:
+    - role: ocp_login
+    - role: create-clean-workspace
+    - role: create_objects

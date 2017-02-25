@@ -1,0 +1,6 @@
+---
+- name: '[Configure Projects] Get updated files from git repository'
+  git:
+    repo: "http://{{ CONFIG_GIT_USER }}:{{ CONFIG_GIT_PASS }}@{{ CONFIG_GIT_URL }}"
+    dest: "{{ DOWNLOAD_PATH }}/{{ SERVICE_NAME }}"
+    accept_hostkey: yes

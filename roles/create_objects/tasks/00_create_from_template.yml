@@ -1,0 +1,16 @@
+---
+- name: '[Create Objects] Change to project'
+  command: "{{ OC_CLIENT_PATH }}/oc project {{ SERVICE_NAME }}-{{ ENV }}"
+
+- name: '[Create Objects] Process template'
+  command: "{{ OC_CLIENT_PATH }}/oc process {{ TEMPLATE_NAME }} -v APPLICATION_NAME={{ SERVICE_NAME }},ENV={{ ENV }},MONGODB_USER={{ MONGODB_USER }},MONGODB_PASSWORD={{ MONGODB_PASSWORD }},MONGODB_DATABASE={{ MONGODB_DATABASE }},MONGODB_ADMIN_PASSWORD={{ MONGODB_ADMIN_PASSWORD }},CONTEXT={{ ARTIFACT_ID }}-{{ ARTIFACT_VERSION }}"
+  register: output
+
+- name: '[Create Objects] Create objects file'
+  copy:
+    content: "{{ output.stdout }}"
+    dest: "{{ DOWNLOAD_PATH }}/{{ SERVICE_NAME }}/objects.json"
+
+- name: '[Create Objects] Create objects from file'
+  command: "{{ OC_CLIENT_PATH }}/oc create -f {{ DOWNLOAD_PATH }}/{{ SERVICE_NAME }}/objects.json"
+  ignore_errors: True

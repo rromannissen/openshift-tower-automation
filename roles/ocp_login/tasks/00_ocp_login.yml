@@ -1,0 +1,4 @@
+---
+#Login to OCP using the provided credentials.
+- name: '[OCP Login] Execute Login'
+  command: "{{ OC_CLIENT_PATH }}/oc login {{ OCP_URL }} -u {{ OCP_USER }} -p {{ OCP_PASSWORD }} --insecure-skip-tls-verify=true"

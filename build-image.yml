@@ -1,0 +1,8 @@
+---
+- name: '[Global] Build Image'
+  hosts: bastion
+  become: false
+  roles:
+    - role: ocp_login
+    - role: create-clean-workspace
+    - role: build_image

@@ -1,0 +1,8 @@
+---
+- name: '[Global] Configure projects'
+  hosts: bastion
+  become: false
+  roles:
+    - role: ocp_login
+    - role: create-clean-workspace
+    - role: config_project

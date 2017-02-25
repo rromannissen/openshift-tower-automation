@@ -1,0 +1,7 @@
+---
+- name: '[Global] Create projects'
+  hosts: bastion
+  become: false
+  roles:
+    - role: ocp_login
+    - role: create_projects

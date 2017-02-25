@@ -1,0 +1,3 @@
+---
+# defaults file for create-clean-workspace
+DOWNLOAD_PATH: '/tmp'

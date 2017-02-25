@@ -1,0 +1,3 @@
+---
+# tasks file for create_objects
+- include: 00_create_from_template.yml

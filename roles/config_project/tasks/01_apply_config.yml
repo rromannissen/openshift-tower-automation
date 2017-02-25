@@ -1,0 +1,52 @@
+---
+- name: '[Configure Projects] Create secret file from template'
+  template:
+    src: db-secret.json.j2
+    dest: "{{ DOWNLOAD_PATH }}/{{ SERVICE_NAME }}/db-secret-{{item.env}}.json"
+  with_items:
+      - { env: "dev", user: "{{ DB_USER_DEV }}", pass: "{{ DB_PASS_DEV }}"}
+      - { env: "pre", user: "{{ DB_USER_PRE }}", pass: "{{ DB_PASS_PRE }}"}
+      - { env: "pro", user: "{{ DB_USER_PRO }}", pass: "{{ DB_PASS_PRO }}"}
+
+- name: '[Configure Projects] Change to DEV project'
+  command: "{{ OC_CLIENT_PATH }}/oc project {{ SERVICE_NAME }}-dev"
+
+- name: '[Configure Projects] Create DEV template'
+  command: "{{ OC_CLIENT_PATH }}/oc create -f {{ DOWNLOAD_PATH }}/{{ SERVICE_NAME }}/template.json"
+  register: result
+  ignore_errors: True
+
+- name: '[Configure Projects] Create DEV secret'
+  command: "{{ OC_CLIENT_PATH }}/oc create -f {{ DOWNLOAD_PATH }}/{{ SERVICE_NAME }}/db-secret-dev.json"
+  when: result|succeeded
+
+- name: '[Configure Projects] Change to PRE project'
+  command: "{{ OC_CLIENT_PATH }}/oc project {{ SERVICE_NAME }}-pre"
+  when: result|succeeded
+
+- name: '[Configure Projects] Create PRE template'
+  command: "{{ OC_CLIENT_PATH }}/oc create -f {{ DOWNLOAD_PATH }}/{{ SERVICE_NAME }}/template.json"
+  when: result|succeeded
+
+- name: '[Configure Projects] Create PRE secret'
+  command: "{{ OC_CLIENT_PATH }}/oc create -f {{ DOWNLOAD_PATH }}/{{ SERVICE_NAME }}/db-secret-pre.json"
+  when: result|succeeded
+
+- name: '[Configure Projects] Change to PRO project'
+  command: "{{ OC_CLIENT_PATH }}/oc project {{ SERVICE_NAME }}-pro"
+  when: result|succeeded
+
+- name: '[Configure Projects] Create PRO template'
+  command: "{{ OC_CLIENT_PATH }}/oc create -f {{ DOWNLOAD_PATH }}/{{ SERVICE_NAME }}/template.json"
+  when: result|succeeded
+
+- name: '[Configure Projects] Create PRO secret'
+  command: "{{ OC_CLIENT_PATH }}/oc create -f {{ DOWNLOAD_PATH }}/{{ SERVICE_NAME }}/db-secret-pro.json"
+  when: result|succeeded
+
+- name: '[Configure Projects] Enable image pulling from DEV'
+  command: "{{ OC_CLIENT_PATH }}/oc policy add-role-to-group system:image-puller system:serviceaccounts:{{ SERVICE_NAME }}-{{ item.env }} --namespace={{ SERVICE_NAME }}-dev"
+  with_items:
+    - { env: "pre"}
+    - { env: "pro"}
+  when: result|succeeded

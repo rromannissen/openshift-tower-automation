@@ -1,0 +1,24 @@
+---
+
+#Get user token
+- name: '[Build Image] Login to OCP registry'
+  command: "{{ OC_CLIENT_PATH }}/oc whoami -t"
+  register: whoami_result
+
+#Login to the OCP registry in order to push image. Assumes docker is installed in the bastion host.
+- name: '[Build Image] Login to OCP registry'
+  command: "docker login -u {{ OCP_USER }} -p {{ whoami_result.stdout }} {{ OC_REGISTRY_URL }}"
+  register: login_result
+  until: login_result.stderr == ""
+  retries: 10
+  delay: 3
+
+- name: '[Build Image] Build image from Dockerfile'
+  command: "docker build -t {{ OC_REGISTRY_URL }}/{{ SERVICE_NAME }}-dev/{{ SERVICE_NAME }} {{ DOWNLOAD_PATH }}/{{ SERVICE_NAME }}"
+
+- name: '[Build Image] Push image to the OCP registry'
+  command: "docker push {{ OC_REGISTRY_URL }}/{{ SERVICE_NAME }}-dev/{{ SERVICE_NAME }}"
+  register: push_result
+  until: push_result.stderr == ""
+  retries: 10
+  delay: 3

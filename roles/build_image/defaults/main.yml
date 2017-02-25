@@ -1,0 +1,4 @@
+---
+# defaults file for build_image
+DOWNLOAD_PATH: '/tmp'
+OC_CLIENT_PATH: '/opt/oc'

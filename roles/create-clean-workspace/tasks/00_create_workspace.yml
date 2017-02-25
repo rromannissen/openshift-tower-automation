@@ -1,0 +1,10 @@
+---
+- name: '[Create clean workspace] Clean download path'
+  file:
+    state: absent
+    path: "{{ DOWNLOAD_PATH }}/{{ SERVICE_NAME }}"
+
+- name: '[Create clean workspace] Create download path'
+  file:
+    state: directory
+    path: "{{ DOWNLOAD_PATH }}/{{ SERVICE_NAME }}"

@@ -1,0 +1,4 @@
+---
+# defaults file for create_objects
+OC_CLIENT_PATH: '/opt/oc'
+DOWNLOAD_PATH: '/tmp'

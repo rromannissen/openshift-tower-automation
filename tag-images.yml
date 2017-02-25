@@ -1,0 +1,7 @@
+---
+- name: '[Global] Tag Images'
+  hosts: bastion
+  become: false
+  roles:
+    - role: ocp_login
+    - role: tag_images
